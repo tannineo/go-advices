@@ -3,6 +3,7 @@
 ### Code
 - [ ] go fmt your code, make everyone happier
 - [ ] multiple if statements can be collapsed into switch
+  - `chan struct{}` weights less, because `unsafe.Sizeof(SomeEmptyStruct) == 0`
 - [ ] use `chan struct{}` to pass signal, `chan bool` makes it less clear
 - [ ] prefer `30 * time.Second` instead of `time.Duration(30) * time.Second`
 - [ ] always wrap for-select idiom to a function
@@ -20,6 +21,7 @@
   }()
   ```
 - [ ] don't use `checkErr` function which panics or does `os.Exit`
+- [ ] use panic only in very specific situations, you have to handle error
 - [ ] don't use alias for enums 'cause this breaks type safety
   - https://play.golang.org/p/MGbeDwtXN3
   - 
@@ -54,7 +56,40 @@
   ```go
   func f(a, b int, s, p string)
   ```
+- [ ] the zero value of a slice is nil
+  - https://play.golang.org/p/pNT0d_Bunq
+  ```go
+    var s []int
+    fmt.Println(s, len(s), cap(s))
+    if s == nil {
+      fmt.Println("nil!")
+    }
+    // Output:
+    // [] 0 0
+    // nil!
+  ```
+  - https://play.golang.org/p/meTInNyxtk
+  ```go
+  var a []string
+  b := []string{}
 
+  fmt.Println(reflect.DeepEqual(a, []string{}))
+  fmt.Println(reflect.DeepEqual(b, []string{}))
+  // Output:
+  // false
+  // true
+  ```
+- [ ] do not comparet enum types with `<`, `>`, `<=` and `>=`
+  - use explicit values, don't do this:
+  ```go
+  value := reflect.ValueOf(object)
+  kind := value.Kind()
+  if kind >= reflect.Chan && kind <= reflect.Slice {
+    // ...
+  }
+  ```
+- [ ] use `%+v` to print data with sufficient details
+  
 ### CI
 - [ ] run `go format` on CI and compare diff
   - this will ensure that everything was generated and commited
@@ -124,6 +159,8 @@
   }
   ```
 - [ ] `sync.Map` isn't a silver bullet, do not use it without a strong reasons
+- [ ] storing non-pointer values in `sync.Pool` allocates memory
+  - more: https://github.com/dominikh/go-tools/blob/master/cmd/staticcheck/docs/checks/SA6002
 
 ### Build
 - [ ] strip your binaries with this command `go build -ldflags="-s -w" ...`
