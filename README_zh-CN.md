@@ -7,12 +7,13 @@
 - [ ] `go fmt`你的代码, 大家都开心
 - [ ] 多重`if`语句可以折叠成`switch`
 - [ ] 使用空结构`chan struct{}`传递信号, `chan bool`稍显不清晰
+  - `chan struct{}`更轻量, 因为`unsafe.Sizeof(SomeEmptyStruct) == 0`
 - [ ] 用`30 * time.Second`, 而不是`time.Duration(30) * time.Second`
 - [ ] 将for-select包装成函数
 - [ ] 按照类型组织`const`声明, 按照 逻辑 和/或 类型 组织`var`声明
 - [ ] 所有阻塞或者IO的函数调用都应该能被取消或者有超时(timeout)检测
 - [ ] 为整型常量实现`Stringer`接口
-  - https://godoc.org/golang.org/x/tools/cmd/stringer 
+  - https://godoc.org/golang.org/x/tools/cmd/stringer
 - [ ] 检查defer中的错误
   ```go
   defer func() {
@@ -23,6 +24,7 @@
   }()
   ```
 - [ ] 不要使用`checkErr`函数, 会产生panic或者`os.Exit`
+- [ ] 只在少数特别情况使用panic, 你必须处理error
 - [ ] enum不要使用类型别名, 这会破坏类型安全(type safety)
   - https://play.golang.org/p/MGbeDwtXN3
   -
@@ -57,18 +59,15 @@
   ```
   ```go
   func f(a, b int, s, p string)
-<<<<<<< HEAD
-  ``
-=======
   ```
-- [ ] 切片的零值是nil 
+- [ ] 切片的零值是nil
   - https://play.golang.org/p/pNT0d_Bunq  
   ```go
   var s []int
   fmt.Println(s, len(s), cap(s))
   if s == nil {
       fmt.Println("nil!")
-  } 
+  }
   // Output:
   // [] 0 0
   // nil!
@@ -77,14 +76,23 @@
   ```go
   var a []string
   b := []string{}
-  
+
   fmt.Println(reflect.DeepEqual(a, []string{}))
   fmt.Println(reflect.DeepEqual(b, []string{}))
   // Output:
   // false
   // true
   ```
->>>>>>> master
+- [ ] 不要使用`<`, `>`, `<=` 和 `>=` 比较enum
+  - 使用明确的变量, 别像下面这样:  
+    ```go
+    value := reflect.ValueOf(object)
+    kind := value.Kind()
+    if kind >= reflect.Chan && kind <= reflect.Slice {
+      // ...
+    }
+    ```
+- [ ] 使用`%+v`打印数据已获得更详细的信息
 
 ### CI 可持续集成
 - [ ] 在CI上运行`go format`, 然后比较不同
@@ -155,6 +163,9 @@
       return buffer.Bytes(), nil
   }
   ```
+- [ ] `sync.Map`不是万能灵药, 没有足够需求时不要使用它
+- [ ] 在`sync.Pool`中保存非指针变量将分配额外内存
+  - 见: https://github.com/dominikh/go-tools/blob/master/cmd/staticcheck/docs/checks/SA6002
 
 ### Build 构建
 - [ ] 为二进制文件瘦身`go build -ldflags="-s -w" ...` !(去除调试信息和符号表)
